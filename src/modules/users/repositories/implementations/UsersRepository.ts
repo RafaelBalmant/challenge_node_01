@@ -1,5 +1,8 @@
+import { v4 as uuidV4 } from "uuid";
+
 import { User } from "../../model/User";
 import { IUsersRepository, ICreateUserDTO } from "../IUsersRepository";
+import retryTimes = jest.retryTimes;
 
 class UsersRepository implements IUsersRepository {
   private users: User[];
@@ -18,24 +21,43 @@ class UsersRepository implements IUsersRepository {
     return UsersRepository.INSTANCE;
   }
 
-  create({ name, email }: ICreateUserDTO): User {
-    // Complete aqui
+  create({ name, email, admin }: ICreateUserDTO): User {
+    const newUser = {
+      id: uuidV4(),
+      name,
+      email,
+      admin: admin || false,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+    this.users.push(newUser);
+    return newUser;
   }
 
   findById(id: string): User | undefined {
-    // Complete aqui
+    return this.users.find((user) => user.id === id);
   }
 
   findByEmail(email: string): User | undefined {
-    // Complete aqui
+    return this.users.find((user) => user.email === email);
   }
 
   turnAdmin(receivedUser: User): User {
-    // Complete aqui
+    const { id } = receivedUser;
+    this.users = this.users.map((user) => {
+      if (user.id === id) {
+        return {
+          ...user,
+          admin: true,
+        };
+      }
+      return user;
+    });
+    return this.users.find((user) => user.id === id);
   }
 
   list(): User[] {
-    // Complete aqui
+    return this.users;
   }
 }
 
